@@ -2,19 +2,16 @@
 #define LITHE_UID_H
 
 
+#include <vector>
 #include <cstdint>
+#include <type_traits>
+#include "types.h"
 
 
 namespace lithe {
-    inline uintmax_t get_entity_uid() {
-        static uintmax_t uid = 0;
-        return uid++;
-    };
-
-
     // Generates a new id with each successive call.
-    inline uintmax_t generate_uid() {
-        static uintmax_t uid = 0;
+    inline lithe::component_id generate_uid() {
+        static lithe::component_id uid = 0;
         return uid++;
     };
 
@@ -28,9 +25,24 @@ namespace lithe {
     // generate_uid() and then keeps that ID from there
     // on, hence the use of static below.
     template <typename T>
-    uintmax_t get_type_uid() {
-        static uintmax_t get_type_uid = generate_uid();
+    lithe::component_id get_type_uid_t() {
+        static lithe::component_id get_type_uid = generate_uid();
         return get_type_uid;
+    }
+
+
+    // Get the decayed type of T, "T&&"" becomes T and
+    // "const T" becomes T. etc.
+    template <typename T>
+    lithe::component_id get_type_uid() {
+        return get_type_uid_t<std::decay<T>>();
+    }
+
+
+    // Return a container of uids.
+    template <typename... Ts>
+    inline std::vector<lithe::component_id> get_type_uids() {
+        return {lithe::get_type_uid<Ts>()...};
     }
 }
 
